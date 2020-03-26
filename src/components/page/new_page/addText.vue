@@ -101,19 +101,19 @@ export default {
             statement: '',
             boms: '',
             uwlevel: '',
-            options: [
+            bomInsured: [
                 {
-                    value: '被保人',
+                    value: 'bomInsured',
                     label: '被保人'
                 },
                 {
-                    value: '险种',
+                    value: 'bomInsured2',
                     label: '险种'
                 }
             ],
             options2: [
                 {
-                    value: '再保意外险风险保额',
+                    value : 'reAccRiskAmnt',
                     label: '再保意外险风险保额'
                 },
                 {
@@ -127,15 +127,15 @@ export default {
             ],
             options3: [
                 {
-                    value: '大于',
+                    value: '>',
                     label: '大于 '
                 },
                 {
-                    value: '是以下的其中之一',
+                    value: 'in',
                     label: '是以下的其中之一'
                 },
                 {
-                    value: '不是以下的其中之一',
+                    value: 'not in',
                     label: '不是以下的其中之一'
                 }
             ],
@@ -167,6 +167,8 @@ export default {
         }
     },
     mounted(){
+        let SessData = sessionStorage.getItem('data')
+        this.dataModel = SessData ? JSON.parse(SessData) : []
         let that =this;
         document.addEventListener('click',e=>{
             if(!that.$refs.addParentheses.contains(e.target)){
@@ -176,7 +178,7 @@ export default {
     },
     methods: {
         getData(key) {
-            return key === 'select_if' ? this.options : key === 'select_02' ? this.options2 : key === 'select_03' ? this.options3 : [];
+            return key === 'select_if' ? this.bomInsured : key === 'select_02' ? this.options2 : key === 'select_03' ? this.options3 : [];
         },
         getShow(id, keyid) {
             let keyArr = ['select_if'];
@@ -225,7 +227,7 @@ export default {
                     let data = item.data;
                     data.map(itm => {
                         if (itm.id === keyid && itm.type === 'text') {
-                            itm.value = itm.content;
+                            itm.value = itm.content === '的' ? '.' : itm.content === '并且' ? '&&' : itm.content;
                         }
                     });
                 }
@@ -238,24 +240,20 @@ export default {
             let contentBox= document.querySelector('.content-box');
             console.log(contentBox.offsetTop, 'box.offsetTop')
             console.log(contentBox.offsetLeft, 'box.offsetLeft')
-            let top = e.clientY - contentBox.offsetTop-10-e.offsetY+'PX';
-            let left= e.clientX - contentBox.offsetLeft-10-e.offsetX+'PX'
+            let top = e.clientY - contentBox.offsetTop-e.offsetY-10+'PX';
+            let left= e.clientX - contentBox.offsetLeft-e.offsetX-10+'PX'
             ul.style.left=left;
             ul.style.top=top;
-            ul.style.width= boundData.width+ 'px';
-            // console.log(id, keyid)
+            ul.style.width= boundData.width-2+ 'px';
             this.addParentheses = true;
             this.IdObject={id,keyid}
         },
         // 添加括号
         addParent(id, keyid, oper,leftOrRight) {
-            // console.log(id, keyid)
-            // 当前行id
             let newData = [];
             let datas = this.dataModel.filter(item => item.id === id)[0].data;
-            // console.log(datas);
-            let left = { id: datas.length + 1, type: 'text', content: oper, key: 'kuohao', value: oper };
-            let and = { id: datas.length + 2, type: 'select', key: 'select_if', value: '', placeholder: '请选择' }
+            let left = { id: datas.length + 1, type: 'text', content: oper, key: 'kuohao', value: '' };
+            let and =  { id: datas.length + 2, type: 'select', key: 'select_if', value: '', placeholder: '请选择' }
             let and2 = { id: datas.length + 3, type: 'text', content: '的', key: 'text_de', value: '' }
             let and3 = { id: datas.length + 4, type: 'select', data: this.options2, key: 'select_02', value: '', placeholder: '请选择' }
             let and4 = { id: datas.length + 5, type: 'select', data: this.options2, key: 'select_03', value: '', placeholder: '请选择符号' }
@@ -263,14 +261,13 @@ export default {
             for (let i = 0; i < datas.length; i++) {
                 if (datas[i].id == keyid) {
                     if(leftOrRight === 'left'){
-                        // console.log('加左边');
                         newData.push(left, datas[i]); // 加前边
                     } else if (leftOrRight === 'right'){
-                        newData.push(datas[i],left); // 加后边
-                        // console.log('加右边');
-                    } else if (leftOrRight === '&&') {
-                        console.log('点击了并且&或者')
-                        newData.push(datas[i],and,and2,and3,and4,and5); // 加后边
+                        if(oper === '并且'){
+                            newData.push(datas[i],left,and,and2,and3,and4,and5); // 加后边
+                        } else {
+                            newData.push(datas[i],left); // 加后边
+                        }
                     }
                 } else {
                     newData.push(datas[i]);
@@ -283,7 +280,6 @@ export default {
             let content = e.target.innerHTML;
             let list=this.list;
             let oper='';
-            // let leftOrRight=true;
             let leftOrRight = 'left';
            switch(content) {
                 case list[0]:
@@ -302,24 +298,18 @@ export default {
                     break;
             } 
             if(oper === ")"){
-                // leftOrRight = false
                 leftOrRight = 'right'
             }
             if(oper === "并且" || oper === "或者"){
-                leftOrRight = '&&'
+                leftOrRight = 'right'
             }
-            // console.log(oper);
-            // console.log(e.target.innerHTML);
-            // console.log(this.IdObject);
             let {id, keyid} = this.IdObject;
             if(!oper)return;
             this.addParent(id, keyid, oper, leftOrRight)
         },
         add() {
             let length = this.dataModel.length;
-            // console.log(length);
             COUNT++;
-            // console.log(COUNT);
             let dataModel = {
                 id: COUNT,
                 show: true,
@@ -336,17 +326,19 @@ export default {
         },
         submit() {
             let data = this.dataModel;
-            let strs = '如果';
+            sessionStorage.setItem('data',JSON.stringify(data));
+            console.log(data);
+            let strs = 'if,';
             data.map(item => {
                 let str = '';
                 item.data.map(ite => {
-                    // console.log(ite.value)
                     str += ite.value;
-                    // console.log(str)
                 });
-                str += '并且';
+                str += '&&,';
                 strs += str;
-                this.statement = strs.slice(0,-2);
+                console.log(strs)
+                console.log(strs.slice(0,-3))
+                this.rulech = strs.slice(0,-3)
             });
             this.ruleCode = '00000000000000001255'
             let content = {
@@ -357,7 +349,7 @@ export default {
                 boms: this.boms,
                 uwlevel: this.uwlevel
             }
-            this.content=content;
+            this.content = content
         },
         // openMenu(e) {
         //     const menuMinWidth = 105
@@ -408,9 +400,10 @@ export default {
     min-width: 100px;
     /* height: 40px; */
     position: absolute;
-    z-index: 99999;
+    z-index: 9999;
     border: solid 1px #ccc;
-    background-color: blue;
+    background-color: #409EFF;
+    color: #fff;
     /* background: pink */
 }
 ul > li {
