@@ -1,0 +1,20 @@
+{
+    "lineId": 1,
+    "lineShow": true,
+    "lineData": [
+        {
+            "factorCode": "holder_surname", // key值 可以做id
+            "defaultValue": "", // 默认值
+            "factorValue": "", // value
+            "getValueType": "GET_SERVE", //获取数据的类型 或者 枚举
+            "inputBoxType": "INPUT", // 是输入框，还是选择框
+            "isDisplay": "YES", // 是否显示
+            "isReadonly": "NO", // 是否读写
+            "isRequired": "YES", // 是否必录
+            "maxValueLength": 28, // 最大最小长度
+            "minValueLength": 0,
+            "placeHolder": "请输入",
+            "seq": 1, //排序
+        }
+    ]
+}
