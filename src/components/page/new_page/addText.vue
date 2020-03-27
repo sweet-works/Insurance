@@ -14,7 +14,7 @@
                     <el-select
                         v-model="data.factorValue"
                         :placeholder="data.placeHolder"
-                        v-if="data.inputBoxType === 'SELECT'"
+                        v-if="data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq) || data.factorCode==='rule_and_or'"
                     >
                         <el-option
                             v-for="item in data.factorData"
@@ -23,17 +23,19 @@
                             :value="item.value"
                         ></el-option>
                     </el-select>
-                    <span v-if="data.inputBoxType === 'STRING'">{{data.factorValue}}</span>
+                    <span
+                        v-if="data.inputBoxType === 'STRING' &&  getShow(item.lineId, data.seq)"
+                    >{{data.factorValue}}</span>
                     <el-input
                         v-model="data.factorValue"
                         :placeholder="data.placeHolder"
-                        v-if="data.inputBoxType === 'INPUT'"
+                        v-if="data.inputBoxType === 'INPUT' &&  getShow(item.lineId, data.seq)"
                     ></el-input>
                 </div>
-                <i class="el-icon-circle-close" @click="cl_close(item.lineId)"></i>
+                <i class="el-icon-circle-close" @click="removeLine(item.lineId)"></i>
             </div>
         </div>
-        <i class="el-icon-plus" v-show="show" @click="add"></i>
+        <i class="el-icon-plus" v-show="show" @click="addLine"></i>
         <el-button type="info" @click="submit">提交</el-button>
     </div>
 </template>
@@ -52,119 +54,35 @@ export default {
                 defaultValue: 'or', // 默认值
                 factorValue: 'and', // value
                 inputBoxType: 'SELECT', // 是输入框，还是选择框
-                getValueType: 'GET_SERVE', //获取数据的类型 或者 枚举
+
                 isDisplay: 'YES', // 是否显示
-                isReadonly: 'NO', // 是否读写
+
                 isRequired: 'YES', // 是否必录
-                maxValueLength: 28, // 最大最小长度
-                minValueLength: 0,
+
                 placeHolder: '请输入',
                 seq: 1, //排序,
                 factorData: SelectData.AND_OR_DATA
             },
-            dataModel: [
-                {
-                    lineId: 1,
-                    lineShow: true,
-                    lineData: [
-                        {
-                            factorCode: 'rule_and_or', // key值 可以做id
-                            defaultValue: 'or', // 默认值
-                            factorValue: 'and', // value
-                            inputBoxType: 'SELECT', // 是输入框，还是选择框
-                            getValueType: 'GET_SERVE', //获取数据的类型 或者 枚举
-                            isDisplay: 'YES', // 是否显示
-                            isReadonly: 'NO', // 是否读写
-                            isRequired: 'YES', // 是否必录
-                            maxValueLength: 28, // 最大最小长度
-                            minValueLength: 0,
-                            placeHolder: '请输入',
-                            seq: 1, //排序,
-                            factorData: SelectData.AND_OR_DATA
-                        },
-                        {
-                            factorCode: 'rule_holder', // key值 可以做id
-                            defaultValue: '', // 默认值
-                            factorValue: '', // value
-                            inputBoxType: 'SELECT', // 是输入框，还是选择框
-                            getValueType: 'GET_SERVE', //获取数据的类型 或者 枚举
-                            isDisplay: 'YES', // 是否显示
-                            isReadonly: 'NO', // 是否读写
-                            isRequired: 'YES', // 是否必录
-                            maxValueLength: 28, // 最大最小长度
-                            minValueLength: 0,
-                            placeHolder: '请选择对象',
-                            factorData: SelectData.HODER_DATA,
-                            seq: 2 //排序
-                        },
-                        {
-                            factorCode: 'rule_of', // key值 可以做id
-                            defaultValue: '的', // 默认值
-                            factorValue: '', // value
-                            inputBoxType: 'SELECT', // 是输入框，还是选择框
-                            getValueType: 'GET_SERVE', //获取数据的类型 或者 枚举
-                            isDisplay: 'YES', // 是否显示
-                            isReadonly: 'NO', // 是否读写
-                            isRequired: 'YES', // 是否必录
-                            maxValueLength: 28, // 最大最小长度
-                            minValueLength: 0,
-                            placeHolder: '的',
-                            factorData: SelectData.DE_DATA,
-                            seq: 3 //排序
-                        },
-                        {
-                            factorCode: 'rule_operator', // key值 可以做id
-                            defaultValue: '', // 默认值
-                            factorValue: '', // value
-                            inputBoxType: 'SELECT', // 是输入框，还是选择框
-                            getValueType: 'GET_SERVE', //获取数据的类型 或者 枚举
-                            isDisplay: 'YES', // 是否显示
-                            isReadonly: 'NO', // 是否读写
-                            isRequired: 'YES', // 是否必录
-                            maxValueLength: 28, // 最大最小长度
-                            minValueLength: 0,
-                            placeHolder: ' 请选择操作符',
-                            factorData: SelectData.OPERATOR_DATA,
-                            seq: 4 //排序
-                        },
-                        {
-                            factorCode: 'rule_operator', // key值 可以做id
-                            defaultValue: '', // 默认值
-                            factorValue: '', // value
-                            inputBoxType: 'INPUT', // 是输入框，还是选择框
-                            getValueType: 'GET_SERVE', //获取数据的类型 或者 枚举
-                            isDisplay: 'YES', // 是否显示
-                            isReadonly: 'NO', // 是否读写
-                            isRequired: 'YES', // 是否必录
-                            maxValueLength: 28, // 最大最小长度
-                            minValueLength: 0,
-                            placeHolder: ' 请输入值',
-                            seq: 5 //排序
-                        }
-                    ]
-                }
-            ]
+            dataModel: []
         };
     },
     mounted() {
-        // let SessData = sessionStorage.getItem('data');
-        // this.dataModel = SessData ? JSON.parse(SessData) : [];
         let that = this;
         document.addEventListener('click', e => {
-            if (!that.$refs.rightHand.contains(e.target)) {
+            if (that.$refs.rightHand && !that.$refs.rightHand.contains(e.target)) {
                 that.rightHand = false; //这句话的意思是点击其他区域关闭（也可以根据自己需求写触发事件）
             }
         });
     },
     methods: {
-        getShow(id, keyid) {
+        getShow(lineId, keyid) {
             let bl = false;
             this.dataModel.map(item => {
-                if (item.id === id) {
-                    let data = item.data;
+                if (item.lineId === lineId) {
+                    let data = item.lineData;
                     data.map(itm => {
-                        if (itm.id == keyid - 1) {
-                            if (!itm.value) {
+                        if (itm.seq == keyid - 1) {
+                            if (!itm.factorValue) {
                                 bl = false;
                             } else {
                                 bl = true;
@@ -173,41 +91,82 @@ export default {
                     });
                 }
             });
-            return true;
+            return bl;
         },
-        // v-show
-        cl_if() {
+        // 删除一行
+        removeLine(lineId) {
+            let newArr = this.dataModel.filter(ite => ite.lineId !== lineId);
             this.dataModel.map(item => {
-                item.show = !item.show;
-            });
-            this.show = !this.show;
-            // console.log(this.dataModel);
-        },
-        // 关闭
-        cl_close(id) {
-            let length = this.dataModel.length;
-            let newArr = this.dataModel.filter(ite => ite.id !== id);
-            this.dataModel.map(item => {
-                if (item.id === id) {
+                if (item.lineId === lineId) {
                     this.dataModel = newArr;
                 }
             });
         },
-        // change事件 - 的
-        tap() {
-            this.if_de = true;
-        },
-        cl_de(id, keyid) {
-            this.dataModel.map(item => {
-                if (item.id === id) {
-                    let data = item.data;
-                    data.map(itm => {
-                        if (itm.id === keyid && itm.type === 'text') {
-                            itm.value = itm.content === '的' ? '.' : itm.content === '并且' ? '&&' : itm.content;
-                        }
-                    });
-                }
-            });
+        // 增加一行
+        addLine() {
+            let length = this.dataModel.length;
+            COUNT++;
+            let dataModel = {
+                lineId: COUNT,
+                lineShow: true,
+                lineData: [
+                    {
+                        factorCode: 'rule_and_or', // key值 字段
+                        defaultValue: 'or', // 默认值
+                        factorValue: 'and', // value
+                        inputBoxType: 'SELECT', // 是输入框，还是选择
+                        isDisplay: 'YES', // 是否显示
+                        isRequired: 'YES', // 是否必录
+                        placeHolder: '请输入',
+                        seq: 1, //排序 可以做id
+                        factorData: SelectData.AND_OR_DATA
+                    },
+                    {
+                        factorCode: 'rule_holder', // key值 可以做id
+                        defaultValue: '', // 默认值
+                        factorValue: '', // value
+                        inputBoxType: 'SELECT', // 是输入框，还是选择框
+                        isDisplay: 'YES', // 是否显示
+                        isRequired: 'YES', // 是否必录
+                        placeHolder: '请选择对象',
+                        factorData: SelectData.HODER_DATA,
+                        seq: 2 //排序
+                    },
+                    {
+                        factorCode: 'rule_of', // key值 可以做id
+                        defaultValue: '的', // 默认值
+                        factorValue: '', // value
+                        inputBoxType: 'SELECT', // 是输入框，还是选择框
+                        isDisplay: 'YES', // 是否显示
+                        isRequired: 'YES', // 是否必录
+                        placeHolder: '的',
+                        factorData: SelectData.DE_DATA,
+                        seq: 3 //排序
+                    },
+                    {
+                        factorCode: 'rule_operator', // key值 可以做id
+                        defaultValue: '', // 默认值
+                        factorValue: '', // value
+                        inputBoxType: 'SELECT', // 是输入框，还是选择框
+                        isDisplay: 'YES', // 是否显示
+                        isRequired: 'YES', // 是否必录
+                        placeHolder: ' 请选择操作符',
+                        factorData: SelectData.OPERATOR_DATA,
+                        seq: 4 //排序
+                    },
+                    {
+                        factorCode: 'rule_operator', // key值 可以做id
+                        defaultValue: '', // 默认值
+                        factorValue: '', // value
+                        inputBoxType: 'INPUT', // 是输入框，还是选择框
+                        isDisplay: 'YES', // 是否显示
+                        isRequired: 'YES', // 是否必录
+                        placeHolder: ' 请输入值',
+                        seq: 5 //排序
+                    }
+                ]
+            };
+            this.dataModel.push(dataModel);
         },
         // 右键
         rightClick(id, keyid, e) {
@@ -227,7 +186,6 @@ export default {
             let { lineId, keyid } = this.IdObject;
             let newData = [];
             let datas = this.dataModel.filter(item => item.lineId === lineId)[0].lineData;
-            console.log(datas);
             // let left = { id: datas.length + 1, type: 'text', content: oper, key: 'kuohao', value: '' };
             // let and =  { id: datas.length + 2, type: 'select', key: 'select_if', value: '', placeholder: '请选择' }
             // let and2 = { id: datas.length + 3, type: 'text', content: '的', key: 'text_de', value: '' }
@@ -255,12 +213,11 @@ export default {
                 defaultValue: oper, // 默认值
                 factorValue: oper, // value
                 inputBoxType: 'STRING', // 是输入框，还是选择框
-                getValueType: 'GET_SERVE', //获取数据的类型 或者 枚举
+
                 isDisplay: 'YES', // 是否显示
-                isReadonly: 'NO', // 是否读写
+
                 isRequired: 'YES', // 是否必录
-                maxValueLength: 28, // 最大最小长度
-                minValueLength: 0,
+
                 seq: keyid //排序,
             };
             for (let i = 0; i < datas.length; i++) {
@@ -269,10 +226,13 @@ export default {
                         newData.push(model, datas[i]); // 加前边
                     } else {
                         if (keys.includes(oper)) {
-                            newData.push(datas[i])
-                            for(let i in this.dataModel){
-                                newData.push(this.dataModel[i])
-                            }
+                            // let arr = [];
+                            // for (let j in datas) {
+                            //     arr.push({ ...datas[j], seq: datas.length + j });
+                            // }
+                            // newData.push(datas[i], ...arr);
+                            // console.log(newData, 2);
+                            newData.push(datas[i], {...this.andOr, factorCode: 'rule_and_or'+i});
                         } else {
                             newData.push(datas[i], model);
                         }
@@ -282,7 +242,7 @@ export default {
                 }
             }
             for (let index in newData) {
-                newData[index].seq = index + 1;
+                newData[index].seq = Number(index) + 1;
             }
             console.log(newData);
             this.dataModel.filter(item => item.lineId === lineId)[0].lineData = newData;
@@ -290,7 +250,6 @@ export default {
         },
         // 由label查value
         labelToValue(data, label) {
-            console.log(data, label);
             let ite = data.filter(item => item.label === label)[0];
             return ite.value;
         },
@@ -310,22 +269,29 @@ export default {
             }
             this.addParent(oper, leftOrRight);
         },
-        add() {
-            let length = this.dataModel.length;
-            COUNT++;
-            let dataModel = {
-                id: COUNT,
-                show: true,
-                title: length > 0 ? '并且' : '',
-                data: [
-                    { id: 1, type: 'select', key: 'select_if', value: '', placeholder: '请选择' },
-                    { id: 2, type: 'text', content: '的', key: 'text_de', value: '' },
-                    { id: 3, type: 'select', data: this.options2, key: 'select_02', value: '', placeholder: '请选择' },
-                    { id: 4, type: 'select', data: this.options2, key: 'select_03', value: '', placeholder: '请选择符号' },
-                    { id: 5, type: 'input', data: this.options3, key: 'input_01', value: '', placeholder: '请输入内容' }
-                ]
-            };
-            this.dataModel.push(dataModel);
+        // v-show
+        cl_if() {
+            this.dataModel.map(item => {
+                item.show = !item.show;
+            });
+            this.show = !this.show;
+            // console.log(this.dataModel);
+        },
+        // change事件 - 的
+        tap() {
+            this.if_de = true;
+        },
+        cl_de(id, keyid) {
+            this.dataModel.map(item => {
+                if (item.id === id) {
+                    let data = item.data;
+                    data.map(itm => {
+                        if (itm.id === keyid && itm.type === 'text') {
+                            itm.value = itm.content === '的' ? '.' : itm.content === '并且' ? '&&' : itm.content;
+                        }
+                    });
+                }
+            });
         },
         submit() {
             let data = this.dataModel;

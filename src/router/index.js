@@ -25,6 +25,11 @@ export default new Router({
                     meta: { title: '自定义图标2' }
                 },
                 {
+                    path: '/comm',
+                    component: () => import(/* webpackChunkName: "icon" */ '../components/page/new_page/comm.vue'),
+                    meta: { title: '自定义图标2' }
+                },
+                {
                     path: '/icon',
                     component: () => import(/* webpackChunkName: "icon" */ '../components/page/Icon.vue'),
                     meta: { title: '自定义图标' }

@@ -81,7 +81,7 @@ export default {
                                     title: '规则定制'
                                 },
                                 {
-                                    index: 'icon2',
+                                    index: 'comm',
                                     title: '规则修改'
                                 }
                             ]
