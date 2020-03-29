@@ -1,12 +1,18 @@
 <template>
     <div class="box">
-        <ul ref="rightHand" v-show="rightHand" class="rightHand" @click="addParentTap">
-            <li v-for="(i,index) in list" :value="i.value" :key="index">{{i.label}}</li>
+        <ul ref="rightHand" v-show="rightHand" class="rightHand">
+            <li
+                v-for="(i,index) in list"
+                :value="i.value"
+                :key="index"
+                @click="addParent(i.value)"
+            >{{i.label}}</li>
         </ul>
-        <p class="title">如果:</p>
+        <p class="title" @click="lineShow">如果:</p>
         <div v-for="item in dataModel" v-show="item.lineShow" :key="item.lineId">
-            <div class="box_fir">
+            <div class="lines">
                 <div
+                    class="suibian"
                     v-for="data in item.lineData"
                     :key="data.seq"
                     @contextmenu.prevent="rightClick(item.lineId, data.seq, $event)"
@@ -14,7 +20,8 @@
                     <el-select
                         v-model="data.factorValue"
                         :placeholder="data.placeHolder"
-                        v-if="data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq) || data.factorCode==='rule_and_or'"
+                        value-key="item.lineId + '_'+ data.seq"
+                        v-if="(data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq)) || data.factorCode==='rule_and_or'"
                     >
                         <el-option
                             v-for="item in data.factorData"
@@ -24,6 +31,7 @@
                         ></el-option>
                     </el-select>
                     <span
+                        style="maxWidth:50px; textAlign:center"
                         v-if="data.inputBoxType === 'STRING' &&  getShow(item.lineId, data.seq)"
                     >{{data.factorValue}}</span>
                     <el-input
@@ -42,6 +50,62 @@
 <script>
 import SelectData from './json/index';
 let COUNT = 0; // 计数
+const DATA = [
+    {
+        factorCode: 'rule_and_or', // key值 字段
+        defaultValue: 'or', // 默认值
+        factorValue: 'and', // value
+        inputBoxType: 'SELECT', // 是输入框，还是选择
+        isDisplay: 'YES', // 是否显示
+        isRequired: 'YES', // 是否必录
+        placeHolder: '请选择',
+        seq: 1, //排序 可以做id
+        factorData: SelectData.AND_OR_DATA
+    },
+    {
+        factorCode: 'rule_holder', // key值 可以做id
+        defaultValue: '', // 默认值
+        factorValue: '', // value
+        inputBoxType: 'SELECT', // 是输入框，还是选择框
+        isDisplay: 'YES', // 是否显示
+        isRequired: 'YES', // 是否必录
+        placeHolder: '请选择对象',
+        factorData: SelectData.HODER_DATA,
+        seq: 2 //排序
+    },
+    {
+        factorCode: 'rule_of', // key值 可以做id
+        defaultValue: '的', // 默认值
+        factorValue: '', // value
+        inputBoxType: 'SELECT', // 是输入框，还是选择框
+        isDisplay: 'YES', // 是否显示
+        isRequired: 'YES', // 是否必录
+        placeHolder: '的',
+        factorData: SelectData.DE_DATA,
+        seq: 3 //排序
+    },
+    {
+        factorCode: 'rule_operator', // key值 可以做id
+        defaultValue: '', // 默认值
+        factorValue: '', // value
+        inputBoxType: 'SELECT', // 是输入框，还是选择框
+        isDisplay: 'YES', // 是否显示
+        isRequired: 'YES', // 是否必录
+        placeHolder: ' 请选择操作符',
+        factorData: SelectData.OPERATOR_DATA,
+        seq: 4 //排序
+    },
+    {
+        factorCode: 'rule_operator', // key值 可以做id
+        defaultValue: '', // 默认值
+        factorValue: '', // value
+        inputBoxType: 'INPUT', // 是输入框，还是选择框
+        isDisplay: 'YES', // 是否显示
+        isRequired: 'YES', // 是否必录
+        placeHolder: ' 请输入值',
+        seq: 5 //排序
+    }
+];
 export default {
     data() {
         return {
@@ -49,20 +113,6 @@ export default {
             show: true, //增加按钮显示与隐藏
             list: SelectData.LIST_DATA, //右键下拉框数据
             IdObject: {}, //存选中的line id 和 点击 id
-            andOr: {
-                factorCode: 'rule_and_or', // key值 可以做id
-                defaultValue: 'or', // 默认值
-                factorValue: 'and', // value
-                inputBoxType: 'SELECT', // 是输入框，还是选择框
-
-                isDisplay: 'YES', // 是否显示
-
-                isRequired: 'YES', // 是否必录
-
-                placeHolder: '请输入',
-                seq: 1, //排序,
-                factorData: SelectData.AND_OR_DATA
-            },
             dataModel: []
         };
     },
@@ -105,71 +155,17 @@ export default {
         // 增加一行
         addLine() {
             let length = this.dataModel.length;
+            let data= JSON.parse(JSON.stringify(DATA))
             COUNT++;
             let dataModel = {
                 lineId: COUNT,
                 lineShow: true,
-                lineData: [
-                    {
-                        factorCode: 'rule_and_or', // key值 字段
-                        defaultValue: 'or', // 默认值
-                        factorValue: 'and', // value
-                        inputBoxType: 'SELECT', // 是输入框，还是选择
-                        isDisplay: 'YES', // 是否显示
-                        isRequired: 'YES', // 是否必录
-                        placeHolder: '请输入',
-                        seq: 1, //排序 可以做id
-                        factorData: SelectData.AND_OR_DATA
-                    },
-                    {
-                        factorCode: 'rule_holder', // key值 可以做id
-                        defaultValue: '', // 默认值
-                        factorValue: '', // value
-                        inputBoxType: 'SELECT', // 是输入框，还是选择框
-                        isDisplay: 'YES', // 是否显示
-                        isRequired: 'YES', // 是否必录
-                        placeHolder: '请选择对象',
-                        factorData: SelectData.HODER_DATA,
-                        seq: 2 //排序
-                    },
-                    {
-                        factorCode: 'rule_of', // key值 可以做id
-                        defaultValue: '的', // 默认值
-                        factorValue: '', // value
-                        inputBoxType: 'SELECT', // 是输入框，还是选择框
-                        isDisplay: 'YES', // 是否显示
-                        isRequired: 'YES', // 是否必录
-                        placeHolder: '的',
-                        factorData: SelectData.DE_DATA,
-                        seq: 3 //排序
-                    },
-                    {
-                        factorCode: 'rule_operator', // key值 可以做id
-                        defaultValue: '', // 默认值
-                        factorValue: '', // value
-                        inputBoxType: 'SELECT', // 是输入框，还是选择框
-                        isDisplay: 'YES', // 是否显示
-                        isRequired: 'YES', // 是否必录
-                        placeHolder: ' 请选择操作符',
-                        factorData: SelectData.OPERATOR_DATA,
-                        seq: 4 //排序
-                    },
-                    {
-                        factorCode: 'rule_operator', // key值 可以做id
-                        defaultValue: '', // 默认值
-                        factorValue: '', // value
-                        inputBoxType: 'INPUT', // 是输入框，还是选择框
-                        isDisplay: 'YES', // 是否显示
-                        isRequired: 'YES', // 是否必录
-                        placeHolder: ' 请输入值',
-                        seq: 5 //排序
-                    }
-                ]
+                lineData: data
             };
             this.dataModel.push(dataModel);
         },
         // 右键
-        rightClick(id, keyid, e) {
+        rightClick(lineId, keyid, e) {
             let boundData = e.target.getBoundingClientRect();
             let ul = document.querySelector('.rightHand');
             let contentBox = document.querySelector('.content-box');
@@ -179,45 +175,28 @@ export default {
             ul.style.top = top;
             ul.style.width = boundData.width - 2 + 'px';
             this.rightHand = true;
-            this.IdObject = { lineId: id, keyid };
+            this.IdObject = { lineId, keyid };
         },
         // 添加右键下拉框选中数据
-        addParent(oper, leftOrRight) {
-            let { lineId, keyid } = this.IdObject;
+        addParent(val) {
+            let leftOrRight = 'right';
+            let oper = val;
             let newData = [];
+            let { lineId, keyid } = this.IdObject;
             let datas = this.dataModel.filter(item => item.lineId === lineId)[0].lineData;
-            // let left = { id: datas.length + 1, type: 'text', content: oper, key: 'kuohao', value: '' };
-            // let and =  { id: datas.length + 2, type: 'select', key: 'select_if', value: '', placeholder: '请选择' }
-            // let and2 = { id: datas.length + 3, type: 'text', content: '的', key: 'text_de', value: '' }
-            // let and3 = { id: datas.length + 4, type: 'select', data: this.options2, key: 'select_02', value: '', placeholder: '请选择' }
-            // let and4 = { id: datas.length + 5, type: 'select', data: this.options2, key: 'select_03', value: '', placeholder: '请选择符号' }
-            // let and5 = { id: datas.length + 6, type: 'input', data: this.options3, key: 'input_01', value: '', placeholder: '请输入内容' }
-            // for (let i = 0; i < datas.length; i++) {
-            //     if (datas[i].id == keyid) {
-            //         if(leftOrRight === 'left'){
-            //             newData.push(left, datas[i]); // 加前边
-            //         } else if (leftOrRight === 'right'){
-            //             if(oper === '并且'){
-            //                 newData.push(datas[i],left,and,and2,and3,and4,and5); // 加后边
-            //             } else {
-            //                 newData.push(datas[i],left); // 加后边
-            //             }
-            //         }
-            //     } else {
-            //         newData.push(datas[i]);
-            //     }
-            // }
+            if (oper == '(') {
+                leftOrRight = 'left';
+            } else {
+                leftOrRight = 'right';
+            }
             let keys = ['andOr'];
             let model = {
                 factorCode: 'text', // key值 可以做id
                 defaultValue: oper, // 默认值
                 factorValue: oper, // value
                 inputBoxType: 'STRING', // 是输入框，还是选择框
-
                 isDisplay: 'YES', // 是否显示
-
                 isRequired: 'YES', // 是否必录
-
                 seq: keyid //排序,
             };
             for (let i = 0; i < datas.length; i++) {
@@ -226,13 +205,14 @@ export default {
                         newData.push(model, datas[i]); // 加前边
                     } else {
                         if (keys.includes(oper)) {
-                            // let arr = [];
-                            // for (let j in datas) {
-                            //     arr.push({ ...datas[j], seq: datas.length + j });
-                            // }
-                            // newData.push(datas[i], ...arr);
-                            // console.log(newData, 2);
-                            newData.push(datas[i], {...this.andOr, factorCode: 'rule_and_or'+i});
+                            console.log(this.dataModel);
+                            let newAddDatas= JSON.parse(JSON.stringify(DATA));
+                            newData.push(datas[i])
+                            for (let j=0;j<newAddDatas.length;j++){
+                                newAddDatas[j].seq=keyid+j;
+                                newAddDatas[j].factorValue=""
+                                newData.push(newAddDatas[j])
+                            }
                         } else {
                             newData.push(datas[i], model);
                         }
@@ -258,40 +238,12 @@ export default {
             let ite = data.filter(item => item.value === value)[0];
             return ite.label;
         },
-        addParentTap(e) {
-            let content = e.target.innerHTML;
-            let oper = this.labelToValue(this.list, content);
-            let leftOrRight = 'right';
-            if (oper == '（') {
-                leftOrRight = 'left';
-            } else {
-                leftOrRight = 'right';
-            }
-            this.addParent(oper, leftOrRight);
-        },
         // v-show
-        cl_if() {
+        lineShow() {
             this.dataModel.map(item => {
-                item.show = !item.show;
+                item.lineShow = !item.lineShow;
             });
-            this.show = !this.show;
             // console.log(this.dataModel);
-        },
-        // change事件 - 的
-        tap() {
-            this.if_de = true;
-        },
-        cl_de(id, keyid) {
-            this.dataModel.map(item => {
-                if (item.id === id) {
-                    let data = item.data;
-                    data.map(itm => {
-                        if (itm.id === keyid && itm.type === 'text') {
-                            itm.value = itm.content === '的' ? '.' : itm.content === '并且' ? '&&' : itm.content;
-                        }
-                    });
-                }
-            });
         },
         submit() {
             let data = this.dataModel;
@@ -359,8 +311,13 @@ export default {
     font-size: 24px;
     color: blue;
 }
-.box_fir {
+.lines {
     display: flex;
+    flex-wrap: wrap;
+}
+.lines .suibian{
+    flex: 1;
+    min-width: 215px;
 }
 .zhanwei {
     width: 48px;

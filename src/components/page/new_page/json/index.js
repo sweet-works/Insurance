@@ -50,8 +50,8 @@ const SelectData = {
          {value: 'length',label: '的长度是'},
     ],
     LIST_DATA:[
-         {value: '（',label: "增加'('"},
-         {value: '）',label: "增加'）'"},
+         {value: '(',label: "增加'('"},
+         {value: ')',label: "增加')'"},
          {value: 'andOr',label: "增加'并且'或'或者'"}
     ]
 }
