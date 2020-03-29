@@ -350,6 +350,8 @@ export default {
                 uwlevel: this.uwlevel
             }
             this.content = content
+            console.log(content)
+            console.log(sessionStorage.getItem('data'))
         },
         // openMenu(e) {
         //     const menuMinWidth = 105
