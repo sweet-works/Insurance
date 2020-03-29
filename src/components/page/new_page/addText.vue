@@ -77,7 +77,8 @@
             </el-select>
         </div>
         <el-button type="info" @click="submit">提交</el-button>
-        <h1 class="title">{{ this.content }}</h1>
+        <!-- <h1 class="title">{{ content }}</h1> -->
+        <h1 class="title">{{ dataModel }}</h1>
     </div>
 </template>
 <script>
@@ -92,10 +93,10 @@ export default {
             IdObject:{}, //存放id
             top: 0,
             left: 0,
+            content: {},
             dataModel: [],
             lastResult: {},
-            content: {},
-            ruleCode: '', // {content}
+            ruleCode: '',
             result: '',
             rulech: '',
             statement: '',
@@ -160,11 +161,6 @@ export default {
                 }
             ]
         };
-    },
-    watch: {
-        content(newVal, old) {
-            console.log(newVal)
-        }
     },
     mounted(){
         let SessData = sessionStorage.getItem('data')
@@ -238,8 +234,8 @@ export default {
             let boundData= e.target.getBoundingClientRect();
             let ul = document.querySelector('.addParentheses');
             let contentBox= document.querySelector('.content-box');
-            console.log(contentBox.offsetTop, 'box.offsetTop')
-            console.log(contentBox.offsetLeft, 'box.offsetLeft')
+            // console.log(contentBox.offsetTop, 'box.offsetTop')
+            // console.log(contentBox.offsetLeft, 'box.offsetLeft')
             let top = e.clientY - contentBox.offsetTop-e.offsetY-10+'PX';
             let left= e.clientX - contentBox.offsetLeft-e.offsetX-10+'PX'
             ul.style.left=left;
@@ -336,8 +332,8 @@ export default {
                 });
                 str += '&&,';
                 strs += str;
-                console.log(strs)
-                console.log(strs.slice(0,-3))
+                // console.log(strs)
+                // console.log(strs.slice(0,-3))
                 this.rulech = strs.slice(0,-3)
             });
             this.ruleCode = '00000000000000001255'
@@ -351,24 +347,8 @@ export default {
             }
             this.content = content
             console.log(content)
-            console.log(sessionStorage.getItem('data'))
+            console.log(this.dataModel)
         },
-        // openMenu(e) {
-        //     const menuMinWidth = 105
-        //     const offsetLeft = this.$el.getBoundingClientRect().left // container margin left
-        //     const offsetWidth = this.$el.offsetWidth // container width
-        //     const maxLeft = offsetWidth - menuMinWidth // left boundary
-        //     const left = e.clientX - offsetLeft // 15: margin right
-
-        //     if (left > maxLeft) {
-        //         this.left = maxLeft
-        //     } else {
-        //         this.left = left
-        //     }
-
-        //     this.top = e.clientY - 60 // fix 位置bug
-        //     this.visible = true
-        // },
         closeMenu() {
             this.addParentheses = false;
         }
