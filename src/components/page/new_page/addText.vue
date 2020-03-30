@@ -45,6 +45,42 @@
         </div>
         <i class="el-icon-plus" v-show="show" @click="addLine"></i>
         <el-button type="info" @click="submit">提交</el-button>
+        <!-- <h1>{{ mm }}</h1> -->
+        <h4>那么: </h4>
+        <!-- here need 绑定对应字段 拼接到报文里 -->
+        <div>
+            <el-select
+                v-model="data.factorValue"
+                :placeholder="data.placeHolder"
+                value-key="item.lineId + '_'+ data.seq"
+                v-if="(data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq)) || data.factorCode==='rule_and_or'"
+            >
+                <el-option
+                    v-for="item in data.factorData"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                ></el-option>
+            </el-select>
+            <el-input
+                v-model="result"
+                :placeholder="data.placeHolder"
+                v-if="data.inputBoxType === 'INPUT' &&  getShow(item.lineId, data.seq)"
+            ></el-input>
+            <el-select
+                v-model="data.factorValue"
+                :placeholder="data.placeHolder"
+                value-key="item.lineId + '_'+ data.seq"
+                v-if="(data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq)) || data.factorCode==='rule_and_or'"
+            >
+                <el-option
+                    v-for="item in data.factorData"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                ></el-option>
+            </el-select>
+        </div>
     </div>
 </template>
 <script>
@@ -63,7 +99,8 @@ const DATA = [
         factorData: SelectData.AND_OR_DATA
     },
     {
-        factorCode: 'rule_holder', // key值 可以做id
+        // factorCode: 'rule_holder', // key值 可以做id
+        factorCode: 'rule_attr1', // key值 可以做id
         defaultValue: '', // 默认值
         factorValue: '', // value
         inputBoxType: 'SELECT', // 是输入框，还是选择框
@@ -74,7 +111,8 @@ const DATA = [
         seq: 2 //排序
     },
     {
-        factorCode: 'rule_of', // key值 可以做id
+        // factorCode: 'rule_of', // key值 可以做id
+        factorCode: 'rule_attr2', // key值 可以做id
         defaultValue: '的', // 默认值
         factorValue: '', // value
         inputBoxType: 'SELECT', // 是输入框，还是选择框
@@ -85,6 +123,7 @@ const DATA = [
         seq: 3 //排序
     },
     {
+        // factorCode: 'rule_operator', // key值 可以做id
         factorCode: 'rule_operator', // key值 可以做id
         defaultValue: '', // 默认值
         factorValue: '', // value
@@ -96,7 +135,7 @@ const DATA = [
         seq: 4 //排序
     },
     {
-        factorCode: 'rule_operator', // key值 可以做id
+        factorCode: 'rule_input', // key值 可以做id
         defaultValue: '', // 默认值
         factorValue: '', // value
         inputBoxType: 'INPUT', // 是输入框，还是选择框
@@ -113,7 +152,8 @@ export default {
             show: true, //增加按钮显示与隐藏
             list: SelectData.LIST_DATA, //右键下拉框数据
             IdObject: {}, //存选中的line id 和 点击 id
-            dataModel: []
+            dataModel: [],
+            mm: ''
         };
     },
     mounted() {
@@ -123,6 +163,105 @@ export default {
                 that.rightHand = false; //这句话的意思是点击其他区域关闭（也可以根据自己需求写触发事件）
             }
         });
+        // 回显测试
+    //     let testDatas = [{
+    //         "lineId": 1,
+    //         "lineShow": true,
+    //         "lineData": [{
+    //             "factorCode": "rule_and_or",
+    //             "factorValue": "and",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 1
+    //         }, {
+    //             "factorCode": "rule_attr1",
+    //             "factorValue": "agent",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 2
+    //         }, {
+    //             "factorCode": "rule_attr2",
+    //             "factorValue": "1",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 3
+    //         }, {
+    //             "factorCode": "rule_operator",
+    //             "factorValue": "than",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 4
+    //         }, {
+    //             "factorCode": "rule_input",
+    //             "factorValue": "5500",
+    //             "inputBoxType": "INPUT",
+    //             "seq": 5
+    //         }]
+    //     }, {
+    //         "lineId": 2,
+    //         "lineShow": true,
+    //         "lineData": [{
+    //             "factorCode": "rule_and_or",
+    //             "factorValue": "and",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 1
+    //         }, {
+    //             "factorCode": "rule_paren",
+    //             "factorValue": "(",
+    //             "inputBoxType": "STRING",
+    //             "seq": 2
+    //         }, {
+    //             "factorCode": "rule_attr1",
+    //             "factorValue": "perInsurance",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 3
+    //         }, {
+    //             "factorCode": "rule_attr2",
+    //             "factorValue": "1",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 4
+    //         }, {
+    //             "factorCode": "rule_operator",
+    //             "factorValue": "in",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 5
+    //         }, {
+    //             "factorCode": "rule_input",
+    //             "factorValue": "55，66",
+    //             "inputBoxType": "INPUT",
+    //             "seq": 6
+    //         }, {
+    //             "factorCode": "rule_and_or",
+    //             "factorValue": "and",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 7
+    //         }, {
+    //             "factorCode": "rule_attr1",
+    //             "factorValue": "applicant",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 8
+    //         }, {
+    //             "factorCode": "rule_attr2",
+    //             "factorValue": "2",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 9
+    //         }, {
+    //             "factorCode": "rule_operator",
+    //             "factorValue": "in",
+    //             "inputBoxType": "SELECT",
+    //             "seq": 10
+    //         }, {
+    //             "factorCode": "rule_input",
+    //             "factorValue": "43634，5345",
+    //             "inputBoxType": "INPUT",
+    //             "seq": 11
+    //         }, {
+    //             "factorCode": "rule_paren",
+    //             "factorValue": ")",
+    //             "inputBoxType": "STRING",
+    //             "seq": 12
+    //         }]
+    //     }]
+    // // 处理testDatas 回显数据
+    // this.valueToLabel(testDatas)
+    // sessionStorage.setItem('data', JSON.stringify(testDatas));
+    // this.dataModel = JSON.parse(sessionStorage.getItem('data'))
     },
     methods: {
         getShow(lineId, keyid) {
@@ -191,12 +330,13 @@ export default {
             }
             let keys = ['andOr'];
             let model = {
-                factorCode: 'text', // key值 可以做id
+                factorCode: 'rule_paren', // key值 可以做id
                 defaultValue: oper, // 默认值
                 factorValue: oper, // value
                 inputBoxType: 'STRING', // 是输入框，还是选择框
                 isDisplay: 'YES', // 是否显示
                 isRequired: 'YES', // 是否必录
+                factorData: '',
                 seq: keyid //排序,
             };
             for (let i = 0; i < datas.length; i++) {
@@ -224,7 +364,6 @@ export default {
             for (let index in newData) {
                 newData[index].seq = Number(index) + 1;
             }
-            console.log(newData);
             this.dataModel.filter(item => item.lineId === lineId)[0].lineData = newData;
             this.rightHand = false;
         },
@@ -235,59 +374,54 @@ export default {
         },
         // 由value查label
         valueToLabel(data, value) {
-            let ite = data.filter(item => item.value === value)[0];
-            return ite.label;
+            // let ite = data.filter(item => item.value === value)[0];
+            let ite = data.filter((item,index)=> {
+                item.lineData.map((item_01)=>{
+                    Object.values(SelectData).filter((item_02) => {
+                        item_02.filter((ite) => {
+                            if (ite.value === item_01.factorValue) {
+                                // 改变factorValue的原始数据为label
+                                if (item_01.factorValue === '(' || item_01.factorValue === ')') {
+                                    item_01.factorValue = item_01.factorValue
+                                } else {
+                                    item_01.factorValue = ite.label
+                                }
+                            }
+                        })
+                    })
+                })
+            })[0];
         },
         // v-show
         lineShow() {
             this.dataModel.map(item => {
                 item.lineShow = !item.lineShow;
             });
-            // console.log(this.dataModel);
         },
         submit() {
-            let data = this.dataModel;
-            sessionStorage.setItem('data', JSON.stringify(data));
-            console.log(data);
-            // let strs = 'if,';
-            // data.map(item => {
-            //     let str = '';
-            //     item.data.map(ite => {
-            //         str += ite.value;
-            //     });
-            //     str += '&&,';
-            //     strs += str;
-            //     console.log(strs);
-            //     console.log(strs.slice(0, -3));
-            //     this.rulech = strs.slice(0, -3);
-            // });
-            // this.ruleCode = '00000000000000001255';
-            // let content = {
-            //     ruleCode: this.ruleCode,
-            //     result: this.result,
-            //     rulech: this.rulech,
-            //     statement: this.statement,
-            //     boms: this.boms,
-            //     uwlevel: this.uwlevel
-            // };
-            // this.content = content;
+            let postData = this.dataModel
+            postData.map((item_post_01) => {
+                item_post_01.lineData.map((item_post_02) => {
+                    delete(item_post_02['defaultValue'])
+                    delete(item_post_02['isDisplay'])
+                    delete(item_post_02['isRequired'])
+                    delete(item_post_02['placeHolder'])
+                    delete(item_post_02['factorData'])
+                    let lineData = item_post_02
+                    this.result_json = {
+                        "releCode": '8390128',
+                        "result": "再保意外>550万需再保呈报",
+                        "uwlevel": "A",
+                        "lines": postData
+                    }
+                })
+                // console.log(this.result_json)
+            })
+            // let data = this.dataModel;
+            // sessionStorage.setItem('data', JSON.stringify(data));
+            // console.log(data);
+            // this.mm = JSON.parse(sessionStorage.getItem('data'))
         },
-        // openMenu(e) {
-        //     const menuMinWidth = 105
-        //     const offsetLeft = this.$el.getBoundingClientRect().left // container margin left
-        //     const offsetWidth = this.$el.offsetWidth // container width
-        //     const maxLeft = offsetWidth - menuMinWidth // left boundary
-        //     const left = e.clientX - offsetLeft // 15: margin right
-
-        //     if (left > maxLeft) {
-        //         this.left = maxLeft
-        //     } else {
-        //         this.left = left
-        //     }
-
-        //     this.top = e.clientY - 60 // fix 位置bug
-        //     this.visible = true
-        // },
         closeMenu() {
             this.rightHand = false;
         }
