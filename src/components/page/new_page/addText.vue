@@ -1,90 +1,114 @@
 <template>
     <div class="box">
-        <ul ref="rightHand" v-show="rightHand" class="rightHand">
-            <li
-                v-for="(i,index) in list"
-                :value="i.value"
-                :key="index"
-                @click="addParent(i.value)"
-            >{{i.label}}</li>
-        </ul>
-        <p class="title" @click="lineShow">如果:</p>
-        <div v-for="item in dataModel" v-show="item.lineShow" :key="item.lineId">
-            <div class="lines">
-                <div
-                    class="suibian"
-                    v-for="data in item.lineData"
-                    :key="data.seq"
-                    @contextmenu.prevent="rightClick(item.lineId, data.seq, $event)"
-                >
-                    <el-select
-                        v-model="data.factorValue"
-                        :placeholder="data.placeHolder"
-                        value-key="item.lineId + '_'+ data.seq"
-                        v-if="(data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq)) || data.factorCode==='rule_and_or'"
-                    >
-                        <el-option
-                            v-for="item in data.factorData"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        ></el-option>
-                    </el-select>
-                    <span
-                        style="maxWidth:50px; textAlign:center"
-                        v-if="data.inputBoxType === 'STRING' &&  getShow(item.lineId, data.seq)"
-                    >{{data.factorValue}}</span>
-                    <el-input
-                        v-model="data.factorValue"
-                        :placeholder="data.placeHolder"
-                        v-if="data.inputBoxType === 'INPUT' &&  getShow(item.lineId, data.seq)"
-                    ></el-input>
-                </div>
-                <i class="el-icon-circle-close" @click="removeLine(item.lineId)"></i>
-            </div>
-        </div>
-        <i class="el-icon-plus" v-show="show" @click="addLine"></i>
-        <el-button type="info" @click="submit">提交</el-button>
-        <!-- <h1>{{ mm }}</h1> -->
-        <h4>那么: </h4>
-        <!-- here need 绑定对应字段 拼接到报文里 -->
         <div>
+            <ul ref="rightHand" v-show="rightHand" class="rightHand">
+                <li
+                    v-for="(i,index) in list"
+                    :value="i.value"
+                    :key="index"
+                    @click="addParent(i.value)"
+                >{{i.label}}</li>
+            </ul>
+            <p class="title" @click="lineShow">如果:</p>
+            <div v-for="item in dataModel" v-show="item.lineShow" :key="item.lineId">
+                <div class="lines">
+                    <div
+                        class="suibian"
+                        v-for="data in item.lineData"
+                        :key="data.seq"
+                        @contextmenu.prevent="rightClick(item.lineId, data.seq, $event)"
+                    >
+                        <el-select
+                            v-model="data.factorValue"
+                            :placeholder="data.placeHolder"
+                            value-key="item.lineId + '_'+ data.seq"
+                            v-if="(data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq)) || data.factorCode==='rule_and_or'"
+                        >
+                            <el-option
+                                v-for="item in data.factorData"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                            ></el-option>
+                        </el-select>
+                        <span
+                            style="maxWidth:50px; textAlign:center"
+                            v-if="data.inputBoxType === 'STRING' &&  getShow(item.lineId, data.seq)"
+                        >{{data.factorValue}}</span>
+                        <el-input
+                            v-model="data.factorValue"
+                            :placeholder="data.placeHolder"
+                            v-if="data.inputBoxType === 'INPUT' &&  getShow(item.lineId, data.seq)"
+                        ></el-input>
+                    </div>
+                    <i class="el-icon-circle-close" @click="removeLine(item.lineId)"></i>
+                </div>
+            </div>
+            <i class="el-icon-plus" v-show="show" @click="addLine"></i>
+            <el-button type="info" @click="submit">提交</el-button>
+            <!-- <h1>{{ mm }}</h1> -->
+            <h4>那么: </h4>
+            <!-- here need 绑定对应字段 拼接到报文里 -->
             <el-select
-                v-model="data.factorValue"
-                :placeholder="data.placeHolder"
-                value-key="item.lineId + '_'+ data.seq"
-                v-if="(data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq)) || data.factorCode==='rule_and_or'"
+                v-model="self_core_value"
+                placeholder="请选择"
+                @change="selfCodeTap"
             >
                 <el-option
-                    v-for="item in data.factorData"
+                    v-for="item in self_core"
                     :key="item.value"
                     :label="item.label"
                     :value="item.value"
                 ></el-option>
             </el-select>
-            <el-input
-                v-model="result"
-                :placeholder="data.placeHolder"
-                v-if="data.inputBoxType === 'INPUT' &&  getShow(item.lineId, data.seq)"
-            ></el-input>
-            <el-select
-                v-model="data.factorValue"
-                :placeholder="data.placeHolder"
-                value-key="item.lineId + '_'+ data.seq"
-                v-if="(data.inputBoxType === 'SELECT' &&  getShow(item.lineId, data.seq)) || data.factorCode==='rule_and_or'"
-            >
-                <el-option
-                    v-for="item in data.factorData"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                ></el-option>
-            </el-select>
+        </div>
+        <div class="baseBox">
+            <el-button type="info" @click="decisionTap">生成决策表</el-button>
+            <el-button type="info" @click="addRow">增加一行</el-button>
+            <el-button type="info" @click="deleteRow">删除选中行</el-button>
+            <!-- table -->
+            <el-table
+                border
+                :data="tableData"
+                style="width: 100%"
+                v-show="table_show"
+                :row-class-name="tableRowClassName"
+                @selection-change="rowClick">
+                <el-table-column
+                    prop="id"
+                    label=""
+                    width="50"
+                >
+                </el-table-column>
+                <el-table-column
+                    type="selection"
+                    width="55">
+                </el-table-column>
+                <template v-for="item in col_name">
+                    <el-table-column
+                    :label="item"
+                    width="180">
+                        <template slot-scope="scope">
+                            <el-input v-model="scope.row.bookvolume" type="number"></el-input>
+                        </template>
+                    </el-table-column>
+                </template>
+                <el-table-column
+                    label="自核结论"
+                    width="180">
+                </el-table-column>
+                <el-table-column
+                    label="转人工核保级别"
+                    width="180">
+                </el-table-column>
+            </el-table>
         </div>
     </div>
 </template>
 <script>
 import SelectData from './json/index';
+// import axios from 'axios'
+import qs from 'qs'
 let COUNT = 0; // 计数
 const DATA = [
     {
@@ -153,117 +177,73 @@ export default {
             list: SelectData.LIST_DATA, //右键下拉框数据
             IdObject: {}, //存选中的line id 和 点击 id
             dataModel: [],
-            mm: ''
+            artificial_Underwriting:[
+                { value: 'a', label: "A" },
+                { value: 'b', label: "B" }
+            ],
+            self_core: [
+                { value: 'pass', label: "自核通过" },
+                { value: 'notPass', label: "自核不通过" }
+            ],
+            self_core_value: '', // 人工核保
+            result_value: '',  
+            artificial_Underwriting_value: '',
+            resVal: false,
+            artVal: false,
+            http: 'http://localhost:9900',
+            table_show: false,
+            table_col_name: '',
+            col_name: [],
+            col_middle: '',
+            tableData: [],
+            indexs: []
         };
     },
     mounted() {
         let that = this;
         document.addEventListener('click', e => {
             if (that.$refs.rightHand && !that.$refs.rightHand.contains(e.target)) {
-                that.rightHand = false; //这句话的意思是点击其他区域关闭（也可以根据自己需求写触发事件）
+                that.rightHand = false; //点击其他区域关闭
             }
         });
         // 回显测试
-    //     let testDatas = [{
-    //         "lineId": 1,
-    //         "lineShow": true,
-    //         "lineData": [{
-    //             "factorCode": "rule_and_or",
-    //             "factorValue": "and",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 1
-    //         }, {
-    //             "factorCode": "rule_attr1",
-    //             "factorValue": "agent",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 2
-    //         }, {
-    //             "factorCode": "rule_attr2",
-    //             "factorValue": "1",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 3
-    //         }, {
-    //             "factorCode": "rule_operator",
-    //             "factorValue": "than",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 4
-    //         }, {
-    //             "factorCode": "rule_input",
-    //             "factorValue": "5500",
-    //             "inputBoxType": "INPUT",
-    //             "seq": 5
-    //         }]
-    //     }, {
-    //         "lineId": 2,
-    //         "lineShow": true,
-    //         "lineData": [{
-    //             "factorCode": "rule_and_or",
-    //             "factorValue": "and",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 1
-    //         }, {
-    //             "factorCode": "rule_paren",
-    //             "factorValue": "(",
-    //             "inputBoxType": "STRING",
-    //             "seq": 2
-    //         }, {
-    //             "factorCode": "rule_attr1",
-    //             "factorValue": "perInsurance",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 3
-    //         }, {
-    //             "factorCode": "rule_attr2",
-    //             "factorValue": "1",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 4
-    //         }, {
-    //             "factorCode": "rule_operator",
-    //             "factorValue": "in",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 5
-    //         }, {
-    //             "factorCode": "rule_input",
-    //             "factorValue": "55，66",
-    //             "inputBoxType": "INPUT",
-    //             "seq": 6
-    //         }, {
-    //             "factorCode": "rule_and_or",
-    //             "factorValue": "and",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 7
-    //         }, {
-    //             "factorCode": "rule_attr1",
-    //             "factorValue": "applicant",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 8
-    //         }, {
-    //             "factorCode": "rule_attr2",
-    //             "factorValue": "2",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 9
-    //         }, {
-    //             "factorCode": "rule_operator",
-    //             "factorValue": "in",
-    //             "inputBoxType": "SELECT",
-    //             "seq": 10
-    //         }, {
-    //             "factorCode": "rule_input",
-    //             "factorValue": "43634，5345",
-    //             "inputBoxType": "INPUT",
-    //             "seq": 11
-    //         }, {
-    //             "factorCode": "rule_paren",
-    //             "factorValue": ")",
-    //             "inputBoxType": "STRING",
-    //             "seq": 12
-    //         }]
-    //     }]
-    // // 处理testDatas 回显数据
-    // this.valueToLabel(testDatas)
-    // sessionStorage.setItem('data', JSON.stringify(testDatas));
-    // this.dataModel = JSON.parse(sessionStorage.getItem('data'))
+        // let a = JSON.parse(sessionStorage.getItem('result_json'))
+        // let testDatas = a.lines
+        // // console.log(testDatas)  // 报文
+        // this.valueToLabel(testDatas)
+        // this.dataModel = testDatas
+        // 回显接口测试
+        // axios.get(`${this.http}/drl_get`).then((data) => {
+        //     console.log(data)
+        // })
     },
     methods: {
+        // 赋值索引
+        tableRowClassName ({row, rowIndex}) {
+            row.index = rowIndex;
+        },
+        // 点击行获取索引
+        rowClick(row) {
+            this.indexs = [];
+            for(let i=0;i<row.length;i++) {
+                this.indexs.push(row[i].index);
+            }
+        },
+        // 增加行
+        addRow() {
+            this.tableData.push({});
+            console.log(this.tableData)
+        },
+        // 删除表格行
+        deleteRow() {
+            console.log(this.indexs)
+            console.log(this.tableData);
+            this.tableData.splice(0,1);
+            // for(let i=this.indexs.length-1;i>=0;i--) {
+            //     console.log(this.indexs[i]);
+            //     this.tableData.splice(this.indexs[i],1)
+            // }
+        },
         getShow(lineId, keyid) {
             let bl = false;
             this.dataModel.map(item => {
@@ -374,9 +354,20 @@ export default {
         },
         // 由value查label
         valueToLabel(data, value) {
-            // let ite = data.filter(item => item.value === value)[0];
             let ite = data.filter((item,index)=> {
                 item.lineData.map((item_01)=>{
+                    // console.log(item_01)
+                    if (item_01.factorCode === 'rule_and_or') {
+                        item_01.factorData = SelectData.AND_OR_DATA
+                    } else if (item_01.factorCode === 'rule_attr1') {
+                        item_01.factorData = SelectData.HODER_DATA
+                    } else if (item_01.factorCode === 'rule_attr2') {
+                        item_01.factorData = SelectData.DE_DATA
+                    } else if (item_01.factorCode === 'rule_operator') {
+                        item_01.factorData = SelectData.OPERATOR_DATA
+                    } else if (item_01.factorCode === 'rule_input') {
+                        item_01.factorData = SelectData.LIST_DATA
+                    }
                     Object.values(SelectData).filter((item_02) => {
                         item_02.filter((ite) => {
                             if (ite.value === item_01.factorValue) {
@@ -399,6 +390,7 @@ export default {
             });
         },
         submit() {
+            // dataModel 是渲染页面的完整数据，遍历后是传给后端的最终报文
             let postData = this.dataModel
             postData.map((item_post_01) => {
                 item_post_01.lineData.map((item_post_02) => {
@@ -408,23 +400,105 @@ export default {
                     delete(item_post_02['placeHolder'])
                     delete(item_post_02['factorData'])
                     let lineData = item_post_02
+                    if (this.self_core_valueself_ === 'a') {
+                        this.art_val = 'A'
+                    } else if (this.self_core_valueself_ === 'b') {
+                        this.art_val = 'B'
+                    } else {
+                        this.art_val = ""
+                    }
                     this.result_json = {
-                        "releCode": '8390128',
-                        "result": "再保意外>550万需再保呈报",
-                        "uwlevel": "A",
+                        "ruleCode": '8390128',
+                        "result": this.result_value,
+                        "uwlevel": this.art_val,
                         "lines": postData
                     }
                 })
-                // console.log(this.result_json)
             })
-            // let data = this.dataModel;
-            // sessionStorage.setItem('data', JSON.stringify(data));
-            // console.log(data);
-            // this.mm = JSON.parse(sessionStorage.getItem('data'))
+            // 把报文存到session
+            console.log(this.result_json)
+            // sessionStorage.setItem('result_json', JSON.stringify(this.result_json))
+            // axios({
+            //     url: `${this.http}/drl_new`,
+            //     method: 'post',
+            //     data:this.result_json
+            // }).then((data) => {
+            //     console.log(data)
+            // })
         },
         closeMenu() {
             this.rightHand = false;
-        }
+        },
+        selfCodeTap() {
+            // console.log(this.self_core_value)
+            if (this.self_core_value === "notPass") {
+                console.log(3213)
+                this.artVal = true,
+                this.resVal = true
+            } else {
+                this.artVal = false,
+                this.resVal = false
+            }
+        },
+        // 决策表
+        decisionTap() {
+            this.table_show = true
+            let arr = [], a = []
+            // console.log(this.dataModel)
+            for (let i = 0; i < this.dataModel.length; i++) {
+                arr.push(this.dataModel[i].lineData);
+            }
+            if (this.col_name === '[]') {
+                for (let i = 0; i < arr.length; i++) {
+                    a = arr[i];
+                    // console.log(a)
+                    for (let j = 0; j < a.length; j++) { 
+                        if (a[j].factorValue === '') {
+                            Object.values(SelectData).map((item_01) => {
+                                item_01.map((item_02) => {
+                                    console.log(a[j-3].factorValue)
+                                    if (item_02.value === a[j-3].factorValue) {
+                                        this.col_middle = item_02.label
+                                    } else if (item_02.value === a[j-2].factorValue) {
+                                        this.col_middle += item_02.label
+                                    } else if (item_02.value === a[j-1].factorValue) {
+                                        this.col_middle += item_02.label
+                                        console.log(this.col_middle)
+                                        this.col_name.push(this.col_middle)
+                                        return this.col_name
+                                    }
+                                })
+                            }) 
+                        }
+                    }
+                }
+            } else {
+                this.col_name = []
+                for (let i = 0; i < arr.length; i++) {
+                    a = arr[i];
+                    // console.log(a)
+                    for (let j = 0; j < a.length; j++) { 
+                        if (a[j].factorValue === '') {
+                            Object.values(SelectData).map((item_01) => {
+                                item_01.map((item_02) => {
+                                    console.log(a[j-3].factorValue)
+                                    if (item_02.value === a[j-3].factorValue) {
+                                        this.col_middle = item_02.label
+                                    } else if (item_02.value === a[j-2].factorValue) {
+                                        this.col_middle += item_02.label
+                                    } else if (item_02.value === a[j-1].factorValue) {
+                                        this.col_middle += item_02.label
+                                        console.log(this.col_middle)
+                                        this.col_name.push(this.col_middle)
+                                        return this.col_name
+                                    }
+                                })
+                            }) 
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 </script>
@@ -464,9 +538,12 @@ export default {
     border: solid 1px #ccc;
     background-color: #409eff;
     color: #fff;
-    /* background: pink */
 }
 ul > li {
     list-style: none;
+}
+/* TODO baseBox */
+.baseBox {
+    margin-top: 20px;
 }
 </style>
