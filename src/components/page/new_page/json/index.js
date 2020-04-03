@@ -2,7 +2,7 @@
  * @Autor: fengming
  * @Date: 2020-03-30 09:40:59
  * @LastEditors: fengming
- * @LastEditTime: 2020-04-01 11:07:07
+ * @LastEditTime: 2020-04-03 17:15:27
  * @Description: 
  */
 const SelectData = {
@@ -31,7 +31,7 @@ const SelectData = {
     OPERATOR_DATA: [
         { value: '>', label: '大于' },
         { value: 'in', label: '是以下之一' },
-        { value: 'unin', label: '不是以下之一' },
+        { value: 'notin', label: '不是以下之一' },
         { value: 'yes', label: '是' },
         { value: 'no', label: '不是' },
         { value: 'endyes', label: '的结尾是' },

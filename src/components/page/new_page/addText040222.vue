@@ -68,53 +68,48 @@
             <el-button type="info" @click="decisionTap">生成决策表</el-button>
             <el-button type="info" @click="addRow">增加一行</el-button>
             <el-button type="info" @click="deleteRow">删除选中行</el-button>
-            <el-button type="info" @click="changeRules">修改规则</el-button>
             <!-- table -->
             <el-table
                 border
-                style="margin-top: 10px;"
                 :data="tableData"
+                style="width: 100%"
                 v-show="table_show"
                 :row-class-name="tableRowClassName"
-                @selection-change="rowClick">
+                @selection-change="rowClick"
+                @row-click="table_row_click">
                 <el-table-column
                     type="index"
-                    align="center"
                     width="50"
                 >
                 </el-table-column>
                 <el-table-column
                     type="selection"
-                    align="center"
                     width="55">
                 </el-table-column>
                 <el-table-column
                 v-for="(item,index) in col_name"
                 :label="item.value"
                 :key="index"
-                align="center"
-                width="240"
-                prop="id">
+                prop="id"
+                width="180">
                     <template slot-scope="scope">
                         <el-input v-model="scope.row[item.key]" type="text"/>
                     </template>
                 </el-table-column>
                 <el-table-column
                     label="自核结论"
-                    width="100"
-                    align="center"
+                    width="180"
                     prop="result">
                     <template slot-scope="scope">
-                        <el-input v-model="scope.row.result" type="text" style="width: 76px;"/>
+                        <el-input v-model="scope.row.result" type="text"/>
                     </template>
                 </el-table-column>
                 <el-table-column
                     label="转人工核保级别"
-                    width="140"
-                    align="center"
+                    width="180"
                     prop="uwlevel">
                     <template slot-scope="scope">
-                        <el-input v-model="scope.row.uwlevel" type="text" style="width: 100px;"/>
+                        <el-input v-model="scope.row.uwlevel" type="text"/>
                     </template>
                 </el-table-column>
             </el-table>
@@ -123,7 +118,7 @@
 </template>
 <script>
 import SelectData from './json/index';
-import axios from 'axios'
+// import axios from 'axios'
 import qs from 'qs'
 let COUNT = 0; // 计数
 const DATA = [
@@ -216,16 +211,10 @@ export default {
             col_name_chinese: [],
             tableData: [],
             indexs: [],
-            dataend: [],
-            arrs:[],
-            multipleSelection: [],
-            returnShow_cloName: [],
-            b1: [],
-            b2: [],
-            chineseName: [],
-            concatArr: [],
-            zz: [],
-            qq: []
+            scope_rowData01: '',
+            scope_rowData02: '',
+            scope_rowData03: '',
+            row_data_value: []
         };
     },
     updated(){
@@ -238,217 +227,71 @@ export default {
         document.addEventListener('click', e => {
             if (that.$refs.rightHand && !that.$refs.rightHand.contains(e.target)) {
                 that.rightHand = false; //点击其他区域关闭
-                // that.rightHand = true;
             }
         });
         // 回显测试
         // let a = JSON.parse(sessionStorage.getItem('result_json'))
         // let testDatas = a.lines
-        // console.log(testDatas)  // 报文
+        // // console.log(testDatas)  // 报文
         // this.valueToLabel(testDatas)
-        // this.dataModel = testDatas、
-        
+        // this.dataModel = testDatas
+        // 回显接口测试
+        // axios.get(`${this.http}/drl_get`).then((data) => {
+        //     console.log(data)
+        // })
     },
     methods: {
-        // 回显接口测试
-        changeRules(){
-            this.table_show = true
-            axios.get(`${this.http}/drl_get`).then((data) => {
-                // console.log(data.data.data)
-                this.valueToLabel(data.data.lines)
-                this.dataModel = data.data.lines
-                // 对表格数据进行回显col_name  tableData
-                // let col_name = [{
-                //     key: "applicant.reAccRiskAmnt",
-                //     value: '投保人的再保意外险风险保额'
-                // },{ 
-                //     key: "applicant.reAccRiskAmnt",
-                //     value: '投保人的再保意外险风险保额'
-                // }]
-                let col_name = []
-                // data.data.data.length -2
-                let keys = []
-                data.data.data.map((item_01) => {
-                    item_01.slice(0,data.data.data.length-3).map((item_02) => {
-                        console.log(item_02);
-                        // 列名的第一个中文
-                        SelectData.HODER_DATA.map((item) => {
-                            console.log(item.value);
-                            // console.log(item_02.key)
-                            if (item.value === item_02.key.split('.')[0]) {
-                                console.log(this.b1);
-                                console.log(231312);
-                                this.b1.push(item.label)
-                            }
-                        })
-                        console.log(this.b1);
-                        SelectData.DE_DATA.map((item) => {
-                            if (item.value === item_02.key.split('.')[1]) {
-                                this.b2.push(item.label)
-                            }
-                        })
-                        this.b1.map((item, index) => {
-                            console.log(index)
-                            this.b2.map((item_02, index02) => {
-                                console.log(index);
-                                console.log(index02);
-                                if (index === index02) {
-                                    this.qq.push(item+item_02)
-                                    console.log(this.qq);
-                                }
-                            })
-                        })
-                        this.col_name = []
-                        item_01.map((item) => {
-                            item.key = item.key.replace(/\./g,'')
-                            keys.push(item.key)
-                            console.log(keys);
-                        })
-                        console.log(keys);
-                        console.log(this.qq);
-                        keys.map((item, index) => {
-                            console.log(keys);
-                            this.qq.map((item_02, index02) => {
-                                console.log(index);
-                                console.log(index02);
-                                if (index === index02) {
-                                    this.col_name.push({
-                                        key: item,
-                                        value: item_02
-                                    })
-                                    console.log(this.col_name);
-                                }
-                            })
-                        })
-                        console.log(this.col_name)
-                    })
-                })
-                // start
-                let values=[];
-                data.data.data.map((item_01) => {
-                    item_01.map((item_02) => {
-                    item_02.key=item_02.key.replace(/\./g,'');
-                    keys.push(item_02.key)
-                    values.push(item_02.value);
-                })
-                })
-                keys.map((item,index)=>{
-                values.map((item1,index1)=>{
-                    if(index===index1) {
-                        this.tableData.push(
-                            {
-                                [item]:item1
-                            }
-                        )
-                    }
-                })
-                })
-                let result=[]
-                let newObj = {};
-                for(var i =0; i< this.tableData.length; i++){
-                Object.assign(newObj,this.tableData[i]);
-                }
-                this.tableData=[]
-                this.tableData.push(newObj);
+        // table row
+        table_row_click (row) {
+            // console.log(row)
+            this.row_data_value = []
+            this.row_data_value.push(row)
+            this.row_data_value.map((item) => {
+                console.log(item);
+                delete(item['index'])
+                delete(item['id'])
+                // delete(item['uwlevel'])
+                // delete(item['result'])
+                console.log(item);
+                // if (Object.keys(item) !== [] && Object.values(item) !== []) {
+                //     console.log(Object.keys(item));
+                //     console.log(Object.values(item));
+                //     let obj = {
+                //         key: Object.keys(item),
+                //         value: Object.values(item)
+                //     }
+                //     console.log(obj);
+                // }
             })
-            // 展示列 ~~~~ start
-            // let col_name = [{
-            //     key: "applicant.reAccRiskAmnt",
-            //     value: '投保人的再保意外险风险保额'
-            // },{ 
-            //     key: "applicant.reAccRiskAmnt",
-            //     value: '投保人的再保意外险风险保额'
-            // }]
-            // this.col_name = col_name
-            // ~~~~ end
-            // 展示行数据 tableData 格式如下 ~~~~start
-            // let arrs = []
-            // let arrs_01 = {
-            //     "uwlevel":"22",
-            //     "result": "22",
-            //     "applicant.reAccRiskAmnt": "22"
-            //     }
-            // let arrs_02 = {
-            //     "uwlevel":"22",
-            //     "result": "22",
-            //     "applicant.reAccRiskAmnt": "22"
-            //     }
-            // arrs.push(arrs_01)
-            // arrs.push(arrs_02)
-            // console.log(arrs);
-            // this.tableData = arrs
-            // ~~~~~ end
+            // console.log(this.row_data_value);
         },
         // 赋值索引
         tableRowClassName ({row, rowIndex}) {
-            row.index = rowIndex;
-        },
-        // 点击行获取索引
-        rowClick(row) {
-            this.multipleSelection = row;
-            if(this.multipleSelection.length>0) {
-                this.indexs = [];
-                for(let i=0;i<row.length;i++) {
-                    this.indexs.push(row[i].index);
-                }
-                row.map((item)=>{
-                    delete item.index
-                })
-                let arr = [];
-                // 将每一行的每一列换成小对象
-                for(let n = 0; n < row.length; n++) {
-                    arr=[]
-                    for (let i in row[n]) {
-                        // arr = new Array();
-                        let o = {};
-                        o[i] = row[n][i];
-                        arr.push(o)
-                    }
-                }
-                let keys = [];
-                let values = [];
-                // 转换对象key value形式
-                arr.forEach((v,i)=>{       
-                    Object.keys(v).forEach(v=>{
-                        keys.push(v) // key
-                        values.push(arr[i][v])  // value
-                    })
-                })
-                this.dataend = [];
-                for (let k=0;k<keys.length;k++) {
-                    if(keys[k].indexOf('-')>0) {
-                        let idx=keys[k].indexOf('-');
-                        keys[k] = keys[k].slice(0,idx)
-                    }
-                    for(let l=0;l<values.length;l++) {
-                        if(k===l) {
-                            this.dataend.push(
-                                {
-                                    'key': keys[k],
-                                    'value': values[l]
-                                }
-                            )
-                        }
-                    }
-                }
-                this.arrs.push(this.dataend);
-                console.log(this.arrs);
-            }
-        },
+            row.index = rowIndex;
+        },
+        // 点击行获取索引
+        rowClick(row) {
+            this.indexs = [];
+            for(let i=0;i<row.length;i++) {
+                this.indexs.push(row[i].index);
+            }
+            // console.log(this.indexs);
+        },
         // 增加行
-        addRow() {
-            this.tableData.push({
+        addRow() {
+            this.tableData.push({
                 "uwlevel": this.tableData.length,
                 "result": this.tableData.length
             });
-            console.log(this.tableData);
-        },
-        // 删除表格行
-        deleteRow() {
-            for(let i=this.indexs.length-1;i>=0;i--) {
-                this.tableData.splice(this.indexs[i],1)
-            }
-        },
+//             console.log(this.tableData)
+        },
+        // 删除表格行
+        deleteRow() {
+            for(let i=this.indexs.length-1;i>=0;i--) {
+                console.log(this.indexs[i]);
+                this.tableData.splice(this.indexs[i],1)
+             }
+        },
         getShow(lineId, keyid) {
             let bl = false;
             this.dataModel.map(item => {
@@ -538,7 +381,6 @@ export default {
                                 newData.push(newAddDatas[j])
                             }
                         } else {
-                            // console.log(model);
                             newData.push(datas[i], model);
                         }
                     }
@@ -613,28 +455,31 @@ export default {
                     }
                     this.result_json = {
                         "ruleCode": '8390128',
-                        "data": this.arrs,
+                        "result": this.result_value,
+                        "uwlevel": this.art_val,
+                        "data": this.tableColName,
                         "lines": postData
                     }
-                    // console.log(this.arrs);
                 })
             })
             // 把报文存到session
             console.log(this.result_json)
             // sessionStorage.setItem('result_json', JSON.stringify(this.result_json))
-            axios({
-                url: `${this.http}/drl_new`,
-                method: 'post',
-                data:this.result_json
-            }).then((data) => {
-                console.log(data)
-            })
+            // axios({
+            //     url: `${this.http}/drl_new`,
+            //     method: 'post',
+            //     data:this.result_json
+            // }).then((data) => {
+            //     console.log(data)
+            // })
         },
         closeMenu() {
             this.rightHand = false;
         },
         selfCodeTap() {
+            // console.log(this.self_core_value)
             if (this.self_core_value === "notPass") {
+                // console.log(3213)
                 this.artVal = true,
                 this.resVal = true
             } else {
@@ -645,17 +490,18 @@ export default {
         // 决策表
         decisionTap() {
             this.table_show = true
-            let arr =[], a = []
-            for (let i = 0; i < this.dataModel.length; i++) {
-                arr.push(this.dataModel[i].lineData);
-            }
+            let arr =[], a = []
+            // console.log(this.dataModel)
+            for (let i = 0; i < this.dataModel.length; i++) {
+                arr.push(this.dataModel[i].lineData);
+            }
                 this.col_name = []
                 this.col_name_english = []
                 this.col_name_chinese = []
                 for (let i = 0; i < arr.length; i++) {
-                    a = arr[i];
-                    for (let j = 0; j < a.length; j++) { 
-                    if (a[j].factorValue === '') {
+                    a = arr[i];
+                    for (let j = 0; j < a.length; j++) { 
+                        if (a[j].factorValue === '') {
                             Object.values(SelectData).map((item_01) => {
                                 item_01.map((item_02) => {
                                     if (item_02.value === a[j-3].factorValue) {
@@ -669,7 +515,7 @@ export default {
                                     }
                                 })
                             })
-                    }
+                        }
                     }
                 }
                 for (let a =0; a < this.col_name_english.length; a++) {
@@ -689,6 +535,7 @@ export default {
                         }
                     }
                 }
+            // console.log(this.col_name)
         }
     }
 };
